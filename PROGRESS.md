@@ -88,11 +88,11 @@ Google FontsのCSS2 APIを実際に取得したところ、`M PLUS Rounded 1c`+`
 - [ ] YouTube URL・直接mp4 URLの動画埋め込み確認（CSPの`frame-src`/`media-src`まわりの回帰確認）— **未実施**。
 
 （上記4項目はネイティブウィンドウでの目視操作が必要。WindowsのフォアグラウンドウィンドウAPI制限によりバックグラウンドプロセスからの自動UI操作・スクリーンショット確認は本セッションでは断念、次回は実機で手動確認する）
-- [ ] git commit・GitHubリモートリポジトリ作成 — **未実施**（ユーザーの明示的指示待ち）。
-- [ ] GitHub Actionsの動作確認（テストタグpush）— リモートリポジトリ作成後に実施。
+- [x] git commit・GitHubリモートリポジトリ作成 — **完了**。初回コミット（55ファイル）を作成し、`gh repo create premath_for_windows --public --source=. --remote=origin --push`でhttps://github.com/hirohiro562/premath_for_windows にpush済み。git設定はこのリポジトリ限定（`user.name=hirohiro562`, `user.email=hiroki2270.kagawa@gmail.com`、`--global`ではない）。
+- [ ] GitHub Actionsの動作確認（テストタグpush）— **未実施**。リモートリポジトリ作成済みなので次回実施可能。
 - [x] LaTeX数式ノート機能 — **実装・実機確認済み**（上記6.参照）。
 
 ## 次回セッションでやること
 
-1. 残っている検証項目（プロセス再起動後の状態復元、フルスクリーン、動画埋め込み、複数モニタ配置）を実施。
-2. 問題なければユーザーに確認の上でgit commit、GitHubリモートリポジトリ作成、テストタグpushでのGitHub Actions動作確認。
+1. 残っている検証項目（プロセス再起動後の状態復元、フルスクリーン、動画埋め込み、複数モニタ配置）を実機で目視確認。
+2. テストタグ（例: `v0.1.0-test1`）をpushしてGitHub Actions（`.github/workflows/release.yml`）の動作確認。
