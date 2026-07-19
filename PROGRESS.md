@@ -95,10 +95,16 @@ Google FontsのCSS2 APIを実際に取得したところ、`M PLUS Rounded 1c`+`
 
 （上記4項目はネイティブウィンドウでの目視操作が必要。WindowsのフォアグラウンドウィンドウAPI制限によりバックグラウンドプロセスからの自動UI操作・スクリーンショット確認は本セッションでは断念、次回は実機で手動確認する）
 - [x] git commit・GitHubリモートリポジトリ作成 — **完了**。初回コミット（55ファイル）を作成し、`gh repo create premath_for_windows --public --source=. --remote=origin --push`でhttps://github.com/hirohiro562/premath_for_windows にpush済み。git設定はこのリポジトリ限定（`user.name=hirohiro562`, `user.email=hiroki2270.kagawa@gmail.com`、`--global`ではない）。
-- [ ] GitHub Actionsの動作確認（テストタグpush）— **未実施**。リモートリポジトリ作成済みなので次回実施可能。
+- [x] GitHub Actionsの動作確認（テストタグpush）— **完了（2026-07-19）**。`v0.1.0-test1`をpushして`release.yml`を実行 → Rustビルド・NSISインストーラー生成は成功したが、最後のGitHubリリース作成ステップが`Resource not accessible by integration`で失敗。原因はデフォルト`GITHUB_TOKEN`が読み取り専用だったこと。`release.yml`に`permissions: contents: write`を追加（コミット`b14d585`）してタグを付け直し再実行 → ドラフトリリース作成・`Dangi_0.1.0_x64-setup.exe`アセット添付まで成功を確認。確認後、テスト用ドラフトリリースとタグ（リモート・ローカル双方）は削除済み。
 - [x] LaTeX数式ノート機能 — **実装・実機確認済み**（上記6.参照）。
 
 ## 次回セッションでやること
 
-1. 残っている検証項目（プロセス再起動後の状態復元、フルスクリーン、動画埋め込み、複数モニタ配置）を実機で目視確認。
-2. テストタグ（例: `v0.1.0-test1`）をpushしてGitHub Actions（`.github/workflows/release.yml`）の動作確認。
+残っているのは実機での目視操作が必要な検証のみ（前回セッションではバックグラウンドプロセスからの自動UI操作・スクリーンショット確認を断念済み）。
+
+1. `npm run tauri dev`でアプリを起動し、以下を目視確認:
+   - プロセス再起動時に常に新規アップロード画面から始まること（発表者ウィンドウをメインから開いた際の同期も回帰確認）
+   - フルスクリーン切り替えの動作
+   - YouTube URL・直接mp4 URLの動画埋め込み（CSPの`frame-src`/`media-src`回帰確認）
+2. 第2モニタがある環境での自動配置確認（開発機がシングルモニタのため別途複数モニタ環境が必要）。
+3. 本番リリースを行う際は、今回の`permissions: contents: write`修正が効いているので通常のバージョンタグ（例: `v0.1.0`）push一発でドラフトリリースが作成できるはず。
