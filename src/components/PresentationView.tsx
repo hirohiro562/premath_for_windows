@@ -12,6 +12,9 @@ const MAX_LASER_SIZE = 40;
 const DEFAULT_LASER_SIZE = 16;
 const LASER_COLORS = ['#ff2828', '#28c440', '#2870ff', '#ffd000', '#e838d8'];
 const PEN_COLORS = ['#e83030', '#222222', '#2870ff', '#ffd000'];
+// Oversampling factor for the audience-facing canvas: renders at more than native pixel
+// density so text/lines stay crisp under projector upscaling or window resizes.
+const MAIN_CANVAS_RENDER_SCALE = 1.5;
 
 export function PresentationView() {
   const state = usePresentationState();
@@ -123,7 +126,12 @@ export function PresentationView() {
             goToPage(state.currentPage - 1);
           }}
         >
-          <SlideCanvas doc={doc} pageNumber={state.currentPage} className="presentation-canvas" />
+          <SlideCanvas
+            doc={doc}
+            pageNumber={state.currentPage}
+            className="presentation-canvas"
+            renderScale={MAIN_CANVAS_RENDER_SCALE}
+          />
           <PenOverlay
             ref={penOverlayRef}
             enabled={penEnabled}

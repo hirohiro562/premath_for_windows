@@ -6,12 +6,14 @@ interface SlideCanvasProps {
   doc: PDFDocumentProxy | null;
   pageNumber: number;
   className?: string;
+  renderScale?: number;
 }
 
 interface RenderRequest {
   pageNumber: number;
   width: number;
   height: number;
+  renderScale: number;
 }
 
 // pdf.js's render() waits on requestAnimationFrame internally, and some browsers
@@ -38,7 +40,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   });
 }
 
-export function SlideCanvas({ doc, pageNumber, className }: SlideCanvasProps) {
+export function SlideCanvas({ doc, pageNumber, className, renderScale = 1 }: SlideCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
@@ -82,21 +84,21 @@ export function SlideCanvas({ doc, pageNumber, className }: SlideCanvasProps) {
   useEffect(() => {
     if (!doc || !canvasRef.current || containerSize.width === 0 || containerSize.height === 0) return;
     const canvas = canvasRef.current;
-    const request: RenderRequest = { pageNumber, width: containerSize.width, height: containerSize.height };
+    const request: RenderRequest = { pageNumber, width: containerSize.width, height: containerSize.height, renderScale };
     latestRequestRef.current = request;
 
     renderChainRef.current = renderChainRef.current.catch(() => {}).then(async () => {
       if (latestRequestRef.current !== request) return;
       try {
         await withTimeout(
-          renderPageToCanvas(doc, pageNumber, canvas, containerSize.width, containerSize.height),
+          renderPageToCanvas(doc, pageNumber, canvas, containerSize.width, containerSize.height, renderScale),
           RENDER_TIMEOUT_MS,
         );
       } catch (err) {
         console.error('SlideCanvas render failed', err);
       }
     });
-  }, [doc, pageNumber, containerSize]);
+  }, [doc, pageNumber, containerSize, renderScale]);
 
   return (
     <div ref={containerRef} className={className}>

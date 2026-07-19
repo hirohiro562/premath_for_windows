@@ -64,7 +64,13 @@ Google FontsのCSS2 APIを実際に取得したところ、`M PLUS Rounded 1c`+`
 
 ### アイコン・CI
 - `npx tauri icon public/favicon.svg`でアイコン一式生成（`icon.ico`含む）。iOS/Android向け生成物は不要なため削除済み。
-- `.github/workflows/release.yml`: `v*.*.*`タグpushで`windows-latest`上でNode 24 + Rust stable(msvc)をセットアップし、`tauri-apps/tauri-action@v1`で`releaseDraft: true`のドラフトリリースを作成。署名用シークレットなし。**未検証**（テストタグをまだpushしていない・リモートリポジトリ未作成）。
+- その後、ユーザー提供の`Dangi_icon.png`（1024x1024、リポジトリ直下に保持・今後のアイコン再生成用ソース）に差し替え、`npx tauri icon Dangi_icon.png`で再生成。iOS/Android/Appx（Square*Logo.png・StoreLogo.png）向け生成物は同様に削除し、Windows向け7ファイル（`32x32.png`/`64x64.png`/`128x128.png`/`128x128@2x.png`/`icon.icns`/`icon.ico`/`icon.png`）のみ残す運用を継続。
+- `.github/workflows/release.yml`: `v*.*.*`タグpushで`windows-latest`上でNode 24 + Rust stable(msvc)をセットアップし、`tauri-apps/tauri-action@v1`で`releaseDraft: true`のドラフトリリースを作成。署名用シークレットなし。**未検証**（テストタグをまだpushしていない）。
+
+### ユーザーフィードバックへの対応（2026-07-19）
+- **初回起動時に前回PDFが残る問題**: `syncStore.ts`はセッション状態（PDFのblob URL含む）を`localStorage`に永続化しており、メインウィンドウが起動するたびにそれを読み込んで復元していたため、前回の発表で使ったPDFが次回起動時にも残ってしまっていた。ユーザーと相談し「常に新規アップロード画面から始める」方針に決定。メインウィンドウ（`?presenter`クエリなし）の初期化時は`localStorage`を読まず常に空状態から始まるよう`loadInitial()`を変更。発表者ウィンドウ（`?presenter=1`、同一セッション中にメインウィンドウから開かれる）は従来通り`localStorage`経由でメインウィンドウの現在の状態に同期する（この経路は残す必要がある——不用意に両方止めると発表者ウィンドウがメインと同期しなくなる）。
+- **投影画面の解像度**: `pdf.ts`の`renderPageToCanvas`は「表示先ボックスサイズ×devicePixelRatio」ちょうどのネイティブ等倍で描画していた。観客に見せるメイン投影画面（`PresentationView`）のみ、`renderScale`パラメータ経由で1.5倍のオーバーサンプリングを追加（`MAIN_CANVAS_RENDER_SCALE`定数、`PresentationView.tsx`）。発表者ビューのサムネイル（`PresenterView.tsx`）は据え置き（`renderScale`未指定＝デフォルト1倍）。
+- **アプリアイコンの差し替え**: 上記「アイコン・CI」参照。
 
 ### 実機動作確認（Rust/VS環境整備後に完了したもの）
 - Rust 1.97.1 / VS Community 2026（C++デスクトップ開発ワークロード込み）を導入済み。
@@ -82,7 +88,7 @@ Google FontsのCSS2 APIを実際に取得したところ、`M PLUS Rounded 1c`+`
 ## 残っている作業
 
 - [x] `src-tauri/capabilities/default.json`の権限識別子が正しいか — **確認済み**。`gen/schemas/desktop-schema.json`と実際のTauri API呼び出し（`WebviewWindow`のconstructor/`getByLabel`/`setFocus`、`@tauri-apps/api/event`の`emit`/`listen`、`@tauri-apps/api/window`の`currentMonitor`/`availableMonitors`）を突き合わせ、`core:default`（`core:window:default`が`current-monitor`/`available-monitors`/`get-all-windows`をカバー、`core:webview:default`が`get-all-webviews`をカバー）＋明示的な`core:webview:allow-create-webview-window`・`core:window:allow-set-focus`・`core:event:default`で過不足なし。
-- [ ] 完全再起動後の状態復元確認（IndexedDBからのPDF再読み込み含む、リロードでなくプロセス再起動での確認）— **未実施**。
+- [ ] プロセス再起動時に常に新規アップロード画面から始まることの確認（上記「ユーザーフィードバックへの対応」参照。以前の「IndexedDBからのPDF自動復元確認」から方針変更）— **未実施**。あわせて、発表者ウィンドウをメインウィンドウから開いた際に現在のPDF・ページ位置・タイマーへ正しく同期することも回帰確認する。
 - [ ] 第2モニタがある環境での自動配置確認 — **未実施**。開発機は現状シングルモニタ（1920×1080）構成のため、確認には複数モニタ環境が別途必要。
 - [ ] フルスクリーン切り替えの動作確認 — **未実施**。
 - [ ] YouTube URL・直接mp4 URLの動画埋め込み確認（CSPの`frame-src`/`media-src`まわりの回帰確認）— **未実施**。

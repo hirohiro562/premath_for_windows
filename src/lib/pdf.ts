@@ -14,6 +14,7 @@ export async function renderPageToCanvas(
   canvas: HTMLCanvasElement,
   boxWidth: number,
   boxHeight: number,
+  renderScale = 1,
 ): Promise<void> {
   const page = await doc.getPage(pageNumber);
   const dpr = window.devicePixelRatio || 1;
@@ -21,7 +22,7 @@ export async function renderPageToCanvas(
   const fitScale = Math.min(boxWidth / baseViewport.width, boxHeight / baseViewport.height);
   const cssWidth = baseViewport.width * fitScale;
   const cssHeight = baseViewport.height * fitScale;
-  const viewport = page.getViewport({ scale: fitScale * dpr });
+  const viewport = page.getViewport({ scale: fitScale * dpr * renderScale });
 
   // pdf.js fills the canvas white before it starts painting content, and a
   // complex page can take several frames to finish — rendering straight into

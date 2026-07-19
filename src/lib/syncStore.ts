@@ -25,7 +25,15 @@ const defaultState: SyncState = {
   slideStartedAt: null,
 };
 
+// The presenter window is a second WebviewWindow running this same bundle from scratch, so it
+// needs to read the main window's live session out of localStorage to sync up on open. The main
+// window itself should never do this: silently resuming a stale session across an actual app
+// restart is surprising (a leftover PDF from last time's talk showing up unannounced), so it
+// always starts clean and lets the user pick a PDF explicitly.
+const isPresenterWindow = new URLSearchParams(window.location.search).has('presenter');
+
 function loadInitial(): SyncState {
+  if (!isPresenterWindow) return defaultState;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return { ...defaultState, ...(JSON.parse(raw) as Partial<SyncState>) };
