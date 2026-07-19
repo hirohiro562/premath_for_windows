@@ -1,0 +1,99 @@
+:root {
+  --text: #3a3a38;
+  --text-secondary: #7a7972;
+  --text-muted: #9a998f;
+  --bg: #fdfcfa;
+  --surface-1: #f6f5f1;
+  --surface-2: #ffffff;
+  --border: #e2e0d6;
+  --border-strong: #c9c7ba;
+  --accent: #5b57d1;
+  --accent-soft: #f6f5fc;
+  --accent-warm: #ff7a59;
+  --accent-warm-soft: #fdf3f0;
+
+  /* Neo-glassmorphism: frosted, translucent panels over a soft gradient backdrop.
+     Kept subtle (low blur/alpha, mostly-white glass) so it reads as "refined" rather
+     than the more saturated glass look of the original 2020s trend. */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-shadow: 0 8px 32px rgba(60, 50, 90, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --glass-blur: 20px;
+
+  /* Same idea, tuned for glass floating over the dark projection stage (always dark
+     regardless of light/dark mode, since it's the audience-facing screen). */
+  --stage-glass-bg: rgba(30, 28, 38, 0.55);
+  --stage-glass-border: rgba(255, 255, 255, 0.14);
+  --stage-glass-shadow: 0 8px 28px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  --sans: 'M PLUS Rounded 1c', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --logo-font: 'Zen Maru Gothic', 'M PLUS Rounded 1c', sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 16px/1.5 var(--sans);
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #e5e4de;
+    --text-secondary: #a8a79d;
+    --text-muted: #7d7c74;
+    --bg: #18171f;
+    --surface-1: #201f29;
+    --surface-2: #26252f;
+    --border: #35333f;
+    --border-strong: #47444f;
+    --accent: #a79cf0;
+    --accent-soft: #2c2846;
+    --accent-warm: #ff9478;
+    --accent-warm-soft: #3a2620;
+
+    --glass-bg: rgba(38, 37, 47, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.09);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+/* A definite height (not min-height, and not a dynamic viewport unit like svh/dvh)
+   so the layout always matches the current window size. min-height alone lets #root
+   grow taller than the viewport to fit oversized content (e.g. a slide canvas that
+   hasn't shrunk back down yet), which then never gets the chance to shrink since its
+   container never gave it a smaller budget to fit into. Dynamic viewport units have
+   their own problem: some browsers don't recompute svh/dvh after a plain window
+   resize (e.g. exiting F11 fullscreen), leaving the page stuck at the previous size. */
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+textarea {
+  font: inherit;
+  color: inherit;
+}
