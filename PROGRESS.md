@@ -1,4 +1,4 @@
-# PROGRESS.md — Dangi Windowsデスクトップ化 進捗メモ
+# PROGRESS.md — TENSOR（旧Dangi）Windowsデスクトップ化 進捗メモ
 
 このファイルは、Windowsデスクトップアプリ化（Tauri）作業を別セッション/別フォルダで再開するための引き継ぎメモ。次回はまずこのファイルを読むこと。
 
@@ -101,23 +101,31 @@ Google FontsのCSS2 APIを実際に取得したところ、`M PLUS Rounded 1c`+`
    - `App.css`: ガラスモーフィズム（ブラー・角丸ピル）から、ネオン枠線+コーナーブラケット（HUD風のL字装飾）のターミナル風パネルに全面書き換え。ボタン・タグ類はuppercase+letter-spacingでHUDラベル風に。
    - アイコン: `NABLA_icon.png`（1024x1024、Python/PILでドット絵の∇シンボルを新規生成——32x32論理グリッドをNEARESTで拡大し、シアン→マゼンタの帯状グラデーション+ネオングロー+走査線背景を合成したもの。今後の再生成用ソースとしてリポジトリ直下に保持）から`npx tauri icon`で全アイコン再生成、`public/favicon.png`も差し替え。旧`Dangi_icon.png`は削除。
    - 名前変更箇所: `package.json`(name)、`src-tauri/tauri.conf.json`(productName/identifier/window title)、`index.html`(title)、`src/lib/actions.ts`(発表者ウィンドウtitle)、`.github/workflows/release.yml`(releaseName)、`src/components/UploadScreen.tsx`(ロゴ表示・名前の由来テキスト)。
-   - 検証: `npm run build`（tsc+vite build）通過済み。`npm run dev`のVite開発サーバーをPlaywrightで開き、アップロード画面・投影画面（トップバー含む）のスクリーンショットで配色・フォント・アイコンの見た目を確認済み。**ただしTauriネイティブウィンドウでの実機確認はまだ**（発表者ウィンドウを開く操作は`@tauri-apps/api`のIPCに依存するため、プレーンブラウザのdevモードでは検証できない）。
-   - **状態: 変更はワーキングツリーに残したまま、コミットはまだ行っていない**（ユーザーの明示的な指示があるまで行わない方針を継続）。
+   - 検証: `npm run build`（tsc+vite build）通過済み。`npm run dev`のVite開発サーバーをPlaywrightで開き、アップロード画面・投影画面（トップバー含む）のスクリーンショットで配色・フォント・アイコンの見た目を確認済み。
 
-8. **アップロード画面の名前由来の説明文を削除、英語UI対応を追加**（2026-07-22、実装済み・**未コミット**）。
+8. **アップロード画面の名前由来の説明文を削除、英語UI対応を追加**（2026-07-22）。
    - `upload-name-note`（「NABLA（ナブラ）」は∇で表される...という説明段落）を`UploadScreen.tsx`/`App.css`から削除。
    - `src/lib/i18n.ts`を新規追加: `ja`/`en`の文言辞書＋`localStorage`永続化＋`@tauri-apps/api/event`でのウィンドウ間同期（`syncStore.ts`と同じパターンだが、PDFセッション状態とは別の独立したキー・イベント名。メインウィンドウ再起動時に毎回まっさらに戻る「常に新規アップロード画面」の挙動とは違い、言語設定はどのウィンドウでも`localStorage`から復元する——ユーザー設定であり発表セッション状態ではないため）。`useTranslation()`フックと`<LanguageToggle />`コンポーネント（`src/components/LanguageToggle.tsx`）を追加。
    - 対応箇所: `UploadScreen`・`PresenterView`・`PresentationView`（トグルはツールバー内に配置し他の操作ボタンと同様に自動非表示——投影画面に常時かぶらないため）・`JoinScreen`・`QrJoinPanel`・`VideoEmbed`・`NotePreview`のユーザー向け文言をすべて`t()`経由に置き換え。ウィンドウタイトルなどOSレベルの文字列（アプリ名そのもの）は対象外。
    - 検証: `npm run build`通過。Playwright（devモード）でJA→EN切り替えのスクリーンショット確認済み。
 
-9. **アプリ名を「NABLA」から「TENSOR」へ再改名、アイコンをアイソメトリック立方体に一新**（2026-07-22、実装済み・**未コミット**）。
+9. **アプリ名を「NABLA」から「TENSOR」へ再改名、アイコンをアイソメトリック立方体に一新**（2026-07-22）。
    - 名前の再検討: ユーザーから追加の候補提示依頼があり、GAUSS/TENSOR/LEMMA/NABLA継続の4択を提示 → **TENSOR**に決定。UIのCSS（配色・フォント・パネルスタイル）は変更なしで維持、名前とアイコンのグリフのみ変更。
    - 改名箇所は7.と同じ一式（`package.json`のname、`tauri.conf.json`のproductName/identifier/window title、`index.html`のtitle、`src/lib/actions.ts`の発表者ウィンドウtitle、`.github/workflows/release.yml`のreleaseName、`UploadScreen.tsx`のロゴ表示）＋`src/lib/i18n.ts`の内部localStorageキー/イベント名（`tensor-language`/`tensor-language-sync`、機能に影響なし・命名整合性のため）。ロゴは`∇`（ナブラ記号）を廃止し、先頭文字「T」を`.logo-d`でアクセントカラー表示する形に変更（`<span className="logo-d">T</span>ENSOR`）。
    - アイコン: `TENSOR_icon.png`（1024x1024、Pythonでゼロから生成）。∇の三角形から、アイソメトリック（等角投影）の立方体に変更——テンソル（多次元配列）の典型的な可視化イメージである「数値の立方体」を意識した造形。上面はシアン寄りのハイライト、左面はシアン→紫の帯グラデーション、右面は紫→マゼンタの帯グラデーションで、引き続きシンセウェイブの配色・ネオングロー・走査線背景を踏襲。
      - 実装メモ: 当初32論理ピクセルグリッドで作ったところ、正しいアイソメトリック比率（2:1の菱形上面）は浅い斜辺になるため32グリッドでは階段状のギザギザが目立ちすぎ「丸っぽい塊」に見えてしまう問題が発生 → 64論理ピクセルグリッド（1024÷64=16倍拡大）に上げて解決。上面に行ごとのグラデーションバンドを掛けると、菱形の一番幅広い中央部分に横方向の色境界線が入り「くぼみ」に見える不具合があったため、上面は単色（バンドなし）に変更して解消。
      - 汎用の点内多角形判定（凸多角形、符号一貫性チェック）で3面をラスタライズする実装のため、他の形状に作り直したくなった場合も流用可能。
    - `npx tauri icon`で全アイコン再生成・iOS/Android/Appx分は削除、`public/favicon.png`も差し替え。旧`NABLA_icon.png`は削除。
-   - 検証: `npm run build`通過。Playwrightでアップロード画面（ロゴ・ファビコン）を確認済み。**Tauriネイティブウィンドウでの実機確認はまだ**。
+   - 検証: `npm run build`通過。Playwrightでアップロード画面（ロゴ・ファビコン）を確認済み。その後`npm run tauri dev`でユーザーがネイティブウィンドウ（タイトル・タスクバーアイコン）を実機確認済み。
+
+10. **「インストール不要・アップロード不要」文言の削除**（2026-07-22）。
+    - Web版（Vercelデプロイ）向けの謳い文句がデスクトップ版（インストーラー配布）にそのまま残っていて実態と矛盾していたため、ユーザー指摘で削除。
+    - `src/lib/i18n.ts`の`upload.subtitle`から「インストール不要・アップロード不要」部分を除去（機能説明の文だけ残す）、`upload.dropzone.note`（「ブラウザ内で処理・アップロードなし」/"Processed locally"）キー自体を削除し、`UploadScreen.tsx`から該当`<p>`と`App.css`の`.dropzone-note`を削除。ja/en両方対応。
+
+11. **v0.1.0をGitHubで正式公開**（2026-07-22）。
+    - 上記7〜10.の変更一式をコミット・push（コミット`6c2ebc7`「Rebrand to TENSOR with a retro-cyber redesign, add English UI toggle」）。
+    - 本セッション冒頭で作成していた旧`Dangi_0.1.0`のドラフトリリース・タグ`v0.1.0`は名前もアイコンも古くなったため削除し、`v0.1.0`タグを同名で作り直してpush → `release.yml`が成功しTENSORブランドのドラフトリリースを再作成。
+    - ユーザー指示によりドラフトを公開（`gh release edit v0.1.0 --draft=false`）。**https://github.com/hirohiro562/premath_for_windows/releases/tag/v0.1.0 で公開中**。インストーラー`TENSOR_0.1.0_x64-setup.exe`（約3.4MB）がダウンロード可能。
 
 ## 残っている作業
 
@@ -127,20 +135,22 @@ Google FontsのCSS2 APIを実際に取得したところ、`M PLUS Rounded 1c`+`
 - [ ] フルスクリーン切り替えの動作確認 — **未実施**。
 - [ ] YouTube URL・直接mp4 URLの動画埋め込み確認（CSPの`frame-src`/`media-src`まわりの回帰確認）— **未実施**。
 - [ ] シングルモニタ環境でのフォールバック動作確認（上記「セカンドディスプレイ非検出時のフォールバック実装」参照）— **未実施**。開発機がシングルモニタのため本来は確認しやすいはずだが、まだ`npm run tauri dev`上での目視確認をしていない。「発表者ビューを開く」→バナー表示→発表者ビューに切り替わる→Tab/戻るボタンで投影画面に戻る、の一連を確認すること。
-- [ ] TENSORへの改名・シンセウェイブUI刷新・英語UI対応（上記7〜9.参照）の実機確認 — **未実施**。`npm run tauri dev`でウィンドウタイトル・タスクバーアイコン（立方体アイコン）・発表者ウィンドウの見た目・言語トグル・NSISインストーラーのアイコンを目視確認すること。問題なければコミット・pushする（現状ワーキングツリーのみ）。
+- [x] TENSORへの改名・シンセウェイブUI刷新・英語UI対応（上記7〜10.参照）の実機確認 — **完了**。`npm run tauri dev`でユーザーがウィンドウタイトル・タスクバーアイコン（立方体アイコン）を確認。コミット・push・タグ`v0.1.0`push・GitHub Actionsビルド成功・ドラフト公開まで完了（上記11.参照）。
 
-（上記4項目はネイティブウィンドウでの目視操作が必要。WindowsのフォアグラウンドウィンドウAPI制限によりバックグラウンドプロセスからの自動UI操作・スクリーンショット確認は本セッションでは断念、次回は実機で手動確認する）
+（上記のうち第2モニタ自動配置・フルスクリーン・動画埋め込み・シングルモニタフォールバックの4項目はネイティブウィンドウでの目視操作が必要。WindowsのフォアグラウンドウィンドウAPI制限によりバックグラウンドプロセスからの自動UI操作・スクリーンショット確認はセッション内では断念、次回は実機で手動確認する）
 - [x] git commit・GitHubリモートリポジトリ作成 — **完了**。初回コミット（55ファイル）を作成し、`gh repo create premath_for_windows --public --source=. --remote=origin --push`でhttps://github.com/hirohiro562/premath_for_windows にpush済み。git設定はこのリポジトリ限定（`user.name=hirohiro562`, `user.email=hiroki2270.kagawa@gmail.com`、`--global`ではない）。
-- [x] GitHub Actionsの動作確認（テストタグpush）— **完了（2026-07-19）**。`v0.1.0-test1`をpushして`release.yml`を実行 → Rustビルド・NSISインストーラー生成は成功したが、最後のGitHubリリース作成ステップが`Resource not accessible by integration`で失敗。原因はデフォルト`GITHUB_TOKEN`が読み取り専用だったこと。`release.yml`に`permissions: contents: write`を追加（コミット`b14d585`）してタグを付け直し再実行 → ドラフトリリース作成・`Dangi_0.1.0_x64-setup.exe`アセット添付まで成功を確認。確認後、テスト用ドラフトリリースとタグ（リモート・ローカル双方）は削除済み。
+- [x] GitHub Actionsの動作確認（テストタグpush）— **完了（2026-07-19）**。`v0.1.0-test1`をpushして`release.yml`を実行 → Rustビルド・NSISインストーラー生成は成功したが、最後のGitHubリリース作成ステップが`Resource not accessible by integration`で失敗。原因はデフォルト`GITHUB_TOKEN`が読み取り専用だったこと。`release.yml`に`permissions: contents: write`を追加（コミット`b14d585`）してタグを付け直し再実行 → ドラフトリリース作成・アセット添付まで成功を確認。確認後、テスト用ドラフトリリースとタグ（リモート・ローカル双方）は削除済み。
 - [x] LaTeX数式ノート機能 — **実装・実機確認済み**（上記6.参照）。
+- [x] v0.1.0の正式公開 — **完了（2026-07-22）**。上記11.参照。https://github.com/hirohiro562/premath_for_windows/releases/tag/v0.1.0
 
 ## 次回セッションでやること
 
-残っているのは実機での目視操作が必要な検証のみ（前回セッションではバックグラウンドプロセスからの自動UI操作・スクリーンショット確認を断念済み）。
+v0.1.0は公開済み。残っているのは実機での目視操作が必要な検証のみ（前回までのセッションではバックグラウンドプロセスからの自動UI操作・スクリーンショット確認を断念済み）。
 
 1. `npm run tauri dev`でアプリを起動し、以下を目視確認:
    - プロセス再起動時に常に新規アップロード画面から始まること（発表者ウィンドウをメインから開いた際の同期も回帰確認）
    - フルスクリーン切り替えの動作
    - YouTube URL・直接mp4 URLの動画埋め込み（CSPの`frame-src`/`media-src`回帰確認）
+   - シングルモニタ環境でのフォールバック動作（「発表者ビューを開く」→バナー表示→切り替え→Tab/戻るボタンで復帰）
 2. 第2モニタがある環境での自動配置確認（開発機がシングルモニタのため別途複数モニタ環境が必要）。
-3. 本番リリースを行う際は、今回の`permissions: contents: write`修正が効いているので通常のバージョンタグ（例: `v0.1.0`）push一発でドラフトリリースが作成できるはず。
+3. 上記が確認できたら、次のバージョンタグ（例: `v0.2.0`）をpushすれば同じ手順でドラフトリリースが作成できる。
