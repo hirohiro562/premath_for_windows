@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Dangi",
+  "productName": "TENSOR",
   "version": "0.1.0",
-  "identifier": "com.hirohiro562.dangi",
+  "identifier": "com.hirohiro562.tensor",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Dangi",
+        "title": "TENSOR",
         "width": 800,
         "height": 600,
         "resizable": true,

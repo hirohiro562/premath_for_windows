@@ -3,8 +3,10 @@ import { usePdfDocument, usePresentationState, useTicker } from '../lib/hooks';
 import { goToPage, setNote, setVideoUrl, toggleTimer } from '../lib/actions';
 import { formatDuration } from '../lib/format';
 import { useReactionFeed } from '../lib/reactions';
+import { useTranslation } from '../lib/i18n';
 import { SlideCanvas } from './SlideCanvas';
 import { NotePreview } from './NotePreview';
+import { LanguageToggle } from './LanguageToggle';
 
 interface PresenterViewProps {
   singleScreenMode?: boolean;
@@ -12,6 +14,7 @@ interface PresenterViewProps {
 }
 
 export function PresenterView({ singleScreenMode = false, onExitSingleScreen }: PresenterViewProps = {}) {
+  const { t } = useTranslation();
   const state = usePresentationState();
   const { doc, loadError } = usePdfDocument(state.pdfBlobUrl);
   const reactions = useReactionFeed(state.sessionCode);
@@ -53,11 +56,11 @@ export function PresenterView({ singleScreenMode = false, onExitSingleScreen }: 
   }, [state.currentPage, singleScreenMode, onExitSingleScreen]);
 
   if (!state.pdfBlobUrl) {
-    return <div className="presenter-empty">メイン画面でPDFを読み込んでください</div>;
+    return <div className="presenter-empty">{t('presenter.empty.noPdf')}</div>;
   }
 
   if (loadError) {
-    return <div className="presenter-empty">PDFを読み込めませんでした。メイン画面を再読み込みしてください</div>;
+    return <div className="presenter-empty">{t('presenter.empty.loadError')}</div>;
   }
 
   const overallMs =
@@ -69,44 +72,50 @@ export function PresenterView({ singleScreenMode = false, onExitSingleScreen }: 
     <div className="presenter-view">
       {singleScreenMode && (
         <div className="presenter-single-screen-banner">
-          <span>2台目のディスプレイが見つかりません。投影画面とこの発表者ビューを切り替えて使用します。</span>
+          <span>{t('presenter.singleScreen.banner')}</span>
           <button type="button" className="presenter-exit-single" onClick={onExitSingleScreen}>
-            ▶ 投影画面に戻る（Tab）
+            {t('presenter.singleScreen.back')}
           </button>
         </div>
       )}
       <div className="presenter-topbar">
         <div className="presenter-nav">
-          <button type="button" onClick={() => goToPage(state.currentPage - 1)} aria-label="前のスライド">
+          <button type="button" onClick={() => goToPage(state.currentPage - 1)} aria-label={t('nav.prev')}>
             ‹
           </button>
-          <span>
-            スライド {state.currentPage} / {state.numPages}
-          </span>
-          <button type="button" onClick={() => goToPage(state.currentPage + 1)} aria-label="次のスライド">
+          <span>{t('presenter.slideCount', { current: state.currentPage, total: state.numPages })}</span>
+          <button type="button" onClick={() => goToPage(state.currentPage + 1)} aria-label={t('nav.next')}>
             ›
           </button>
         </div>
         <div className="presenter-timers">
-          <button type="button" className="presenter-play" onClick={toggleTimer} aria-label={state.isRunning ? '一時停止' : '開始'}>
+          <button
+            type="button"
+            className="presenter-play"
+            onClick={toggleTimer}
+            aria-label={state.isRunning ? t('presenter.play.pause') : t('presenter.play.start')}
+          >
             {state.isRunning ? '⏸' : '▶'}
           </button>
           <div className="timer-block">
-            <span className="timer-label">このスライド</span>
+            <span className="timer-label">{t('presenter.timer.slide')}</span>
             <span className="timer-value">{formatDuration(slideMs)}</span>
           </div>
           <div className="timer-divider" />
           <div className="timer-block">
-            <span className="timer-label">全体</span>
+            <span className="timer-label">{t('presenter.timer.overall')}</span>
             <span className="timer-value">{formatDuration(overallMs)}</span>
           </div>
+          <LanguageToggle />
         </div>
       </div>
 
       <div className="presenter-body">
         <div className="presenter-current">
-          <span className="presenter-tag">現在</span>
-          {state.videosByPage[state.currentPage] && <span className="presenter-tag presenter-tag--video">🎬 投影中</span>}
+          <span className="presenter-tag">{t('presenter.tag.current')}</span>
+          {state.videosByPage[state.currentPage] && (
+            <span className="presenter-tag presenter-tag--video">{t('presenter.tag.videoPlaying')}</span>
+          )}
           <SlideCanvas doc={doc} pageNumber={state.currentPage} className="presenter-current-canvas" />
           <div className="reaction-overlay">
             {reactions.map((r) => (
@@ -118,15 +127,15 @@ export function PresenterView({ singleScreenMode = false, onExitSingleScreen }: 
         </div>
         <div className="presenter-side">
           <div className="presenter-next">
-            <span className="presenter-label">次のスライド</span>
+            <span className="presenter-label">{t('presenter.next.label')}</span>
             {state.currentPage < state.numPages ? (
               <SlideCanvas doc={doc} pageNumber={state.currentPage + 1} className="presenter-next-canvas" />
             ) : (
-              <div className="presenter-next-empty">最後のスライドです</div>
+              <div className="presenter-next-empty">{t('presenter.next.empty')}</div>
             )}
           </div>
           <div className="presenter-video-input">
-            <span className="presenter-label">動画URL（このスライドで再生）</span>
+            <span className="presenter-label">{t('presenter.video.label')}</span>
             <input
               type="url"
               value={state.videosByPage[state.currentPage] ?? ''}
@@ -136,9 +145,9 @@ export function PresenterView({ singleScreenMode = false, onExitSingleScreen }: 
           </div>
           <div className="presenter-notes">
             <div className="presenter-notes-header">
-              <span className="presenter-label">ノート</span>
+              <span className="presenter-label">{t('presenter.notes.label')}</span>
               <button type="button" className="note-toggle" onClick={() => setIsNotePreview((v) => !v)}>
-                {isNotePreview ? '編集' : 'プレビュー'}
+                {isNotePreview ? t('presenter.notes.edit') : t('presenter.notes.preview')}
               </button>
             </div>
             {isNotePreview ? (
@@ -147,7 +156,7 @@ export function PresenterView({ singleScreenMode = false, onExitSingleScreen }: 
               <textarea
                 value={state.notesByPage[state.currentPage] ?? ''}
                 onChange={(e) => setNote(state.currentPage, e.target.value)}
-                placeholder="このスライドのノートを入力（数式は $x^2$ や $$\int f(x)\,dx$$ のように記述）"
+                placeholder={t('presenter.notes.placeholder')}
               />
             )}
           </div>

@@ -1,12 +1,14 @@
 import { parseNoteSegments, renderMath } from '../lib/mathRender';
+import { useTranslation } from '../lib/i18n';
 
 interface NotePreviewProps {
   text: string;
 }
 
 export function NotePreview({ text }: NotePreviewProps) {
+  const { t } = useTranslation();
   if (!text) {
-    return <div className="note-preview note-preview--empty">プレビューする内容がありません</div>;
+    return <div className="note-preview note-preview--empty">{t('note.empty')}</div>;
   }
 
   const segments = parseNoteSegments(text);

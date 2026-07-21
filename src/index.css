@@ -1,64 +1,50 @@
 :root {
-  --text: #3a3a38;
-  --text-secondary: #7a7972;
-  --text-muted: #9a998f;
-  --bg: #fdfcfa;
-  --surface-1: #f6f5f1;
-  --surface-2: #ffffff;
-  --border: #e2e0d6;
-  --border-strong: #c9c7ba;
-  --accent: #5b57d1;
-  --accent-soft: #f6f5fc;
-  --accent-warm: #ff7a59;
-  --accent-warm-soft: #fdf3f0;
+  /* Synthwave: deep purple-black stage lit by cyan/magenta neon. One fixed dark
+     identity on purpose — this app doesn't follow the OS light/dark toggle,
+     the neon look *is* the brand. */
+  --text: #e8e8ff;
+  --text-secondary: #9d97c9;
+  --text-muted: #6b6591;
+  --bg: #0d0221;
+  --bg-alt: #170a35;
+  --surface-1: #150b2e;
+  --surface-2: #1c1040;
+  --border: rgba(0, 240, 255, 0.25);
+  --border-strong: rgba(0, 240, 255, 0.5);
 
-  /* Neo-glassmorphism: frosted, translucent panels over a soft gradient backdrop.
-     Kept subtle (low blur/alpha, mostly-white glass) so it reads as "refined" rather
-     than the more saturated glass look of the original 2020s trend. */
-  --glass-bg: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.8);
-  --glass-shadow: 0 8px 32px rgba(60, 50, 90, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  --glass-blur: 20px;
+  --accent: #00f0ff;       /* cyan neon — primary */
+  --accent-soft: rgba(0, 240, 255, 0.12);
+  --accent-warm: #ff2bd6;  /* magenta neon — secondary / highlight */
+  --accent-warm-soft: rgba(255, 43, 214, 0.12);
+  --accent-warn: #f5d300;  /* amber — alerts, active/recording states */
 
-  /* Same idea, tuned for glass floating over the dark projection stage (always dark
-     regardless of light/dark mode, since it's the audience-facing screen). */
-  --stage-glass-bg: rgba(30, 28, 38, 0.55);
-  --stage-glass-border: rgba(255, 255, 255, 0.14);
-  --stage-glass-shadow: 0 8px 28px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --glow-cyan: 0 0 6px rgba(0, 240, 255, 0.55), 0 0 18px rgba(0, 240, 255, 0.22);
+  --glow-magenta: 0 0 6px rgba(255, 43, 214, 0.55), 0 0 18px rgba(255, 43, 214, 0.22);
 
-  --sans: 'M PLUS Rounded 1c', system-ui, 'Segoe UI', Roboto, sans-serif;
-  --logo-font: 'Zen Maru Gothic', 'M PLUS Rounded 1c', sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Panels: flat dark terminal glass with a hard neon hairline instead of frosted blur. */
+  --glass-bg: rgba(18, 9, 40, 0.82);
+  --glass-border: rgba(0, 240, 255, 0.3);
+  --glass-shadow: 0 0 0 1px rgba(0, 240, 255, 0.12), 0 8px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  --glass-blur: 6px;
 
-  font: 16px/1.5 var(--sans);
-  color-scheme: light dark;
+  /* Same idea for glass floating over the dark projection stage. */
+  --stage-glass-bg: rgba(13, 2, 33, 0.72);
+  --stage-glass-border: rgba(0, 240, 255, 0.3);
+  --stage-glass-shadow: 0 0 0 1px rgba(0, 240, 255, 0.15), 0 8px 28px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+
+  --sans: 'M PLUS 1 Code', ui-monospace, Consolas, monospace;
+  --display-font: 'DotGothic16', 'M PLUS 1 Code', monospace;
+  --logo-font: 'Press Start 2P', 'DotGothic16', monospace;
+  --mono: 'M PLUS 1 Code', ui-monospace, Consolas, monospace;
+
+  font: 15px/1.6 var(--sans);
+  color-scheme: dark;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #e5e4de;
-    --text-secondary: #a8a79d;
-    --text-muted: #7d7c74;
-    --bg: #18171f;
-    --surface-1: #201f29;
-    --surface-2: #26252f;
-    --border: #35333f;
-    --border-strong: #47444f;
-    --accent: #a79cf0;
-    --accent-soft: #2c2846;
-    --accent-warm: #ff9478;
-    --accent-warm-soft: #3a2620;
-
-    --glass-bg: rgba(38, 37, 47, 0.55);
-    --glass-border: rgba(255, 255, 255, 0.09);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  }
 }
 
 * {
@@ -72,6 +58,26 @@ body {
 
 body {
   margin: 0;
+  position: relative;
+}
+
+/* Subtle CRT scanline overlay across the whole app — faint enough to stay out
+   of the way of text, present enough to read as an old monitor. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.12) 0px,
+    rgba(0, 0, 0, 0.12) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+  opacity: 0.5;
 }
 
 /* A definite height (not min-height, and not a dynamic viewport unit like svh/dvh)
@@ -96,4 +102,9 @@ button {
 textarea {
   font: inherit;
   color: inherit;
+}
+
+::selection {
+  background: var(--accent);
+  color: #0d0221;
 }

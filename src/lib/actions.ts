@@ -119,7 +119,7 @@ export async function openPresenterWindow(): Promise<boolean> {
 
   new WebviewWindow('presenter', {
     url: relativeUrl,
-    title: 'Dangi — Presenter',
+    title: 'TENSOR — Presenter',
     x: placement.left,
     y: placement.top,
     width: placement.width,

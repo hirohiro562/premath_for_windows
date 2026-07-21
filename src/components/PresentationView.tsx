@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { usePdfDocument, usePresentationState } from '../lib/hooks';
 import { closePresentation, goToPage, openPresenterWindow } from '../lib/actions';
 import { isReactionsConfigured } from '../lib/supabase';
+import { useTranslation } from '../lib/i18n';
 import { SlideCanvas } from './SlideCanvas';
 import { QrJoinPanel } from './QrJoinPanel';
 import { VideoEmbed } from './VideoEmbed';
 import { PenOverlay, type PenOverlayHandle } from './PenOverlay';
+import { LanguageToggle } from './LanguageToggle';
 
 const MIN_LASER_SIZE = 8;
 const MAX_LASER_SIZE = 40;
@@ -21,6 +23,7 @@ interface PresentationViewProps {
 }
 
 export function PresentationView({ onPresenterFallback }: PresentationViewProps) {
+  const { t } = useTranslation();
   const state = usePresentationState();
   const { doc } = usePdfDocument(state.pdfBlobUrl);
   const [toolbarVisible, setToolbarVisible] = useState(true);
@@ -167,13 +170,13 @@ export function PresentationView({ onPresenterFallback }: PresentationViewProps)
         />
       )}
       <div className={`presentation-toolbar${toolbarVisible ? '' : ' presentation-toolbar--hidden'}`}>
-        <button type="button" onClick={() => goToPage(state.currentPage - 1)} aria-label="前のスライド">
+        <button type="button" onClick={() => goToPage(state.currentPage - 1)} aria-label={t('nav.prev')}>
           ‹
         </button>
         <span className="presentation-page-count">
           {state.currentPage} / {state.numPages}
         </span>
-        <button type="button" onClick={() => goToPage(state.currentPage + 1)} aria-label="次のスライド">
+        <button type="button" onClick={() => goToPage(state.currentPage + 1)} aria-label={t('nav.next')}>
           ›
         </button>
         <button
@@ -181,7 +184,7 @@ export function PresentationView({ onPresenterFallback }: PresentationViewProps)
           className={`presentation-presenter-btn${laserEnabled ? ' presentation-presenter-btn--active' : ''}`}
           onClick={() => setLaserEnabled((v) => !v)}
         >
-          🔴 レーザー
+          {t('toolbar.laser')}
         </button>
         {laserEnabled && (
           <>
@@ -192,7 +195,7 @@ export function PresentationView({ onPresenterFallback }: PresentationViewProps)
               value={laserSize}
               onChange={(e) => setLaserSize(Number(e.target.value))}
               className="presentation-laser-slider"
-              aria-label="レーザーポインタのサイズ"
+              aria-label={t('toolbar.laser.sizeAria')}
             />
             <div className="color-swatches">
               {LASER_COLORS.map((color) => (
@@ -201,7 +204,7 @@ export function PresentationView({ onPresenterFallback }: PresentationViewProps)
                   type="button"
                   className={`color-swatch${color === laserColor ? ' color-swatch--active' : ''}`}
                   style={{ background: color }}
-                  aria-label={`レーザーの色を${color}にする`}
+                  aria-label={t('toolbar.laser.colorAria', { color })}
                   onClick={() => setLaserColor(color)}
                 />
               ))}
@@ -213,7 +216,7 @@ export function PresentationView({ onPresenterFallback }: PresentationViewProps)
           className={`presentation-presenter-btn${penEnabled ? ' presentation-presenter-btn--active' : ''}`}
           onClick={() => setPenEnabled((v) => !v)}
         >
-          ✏️ ペン
+          {t('toolbar.pen')}
         </button>
         {penEnabled && (
           <>
@@ -224,7 +227,7 @@ export function PresentationView({ onPresenterFallback }: PresentationViewProps)
                   type="button"
                   className={`color-swatch${color === penColor ? ' color-swatch--active' : ''}`}
                   style={{ background: color }}
-                  aria-label={`ペンの色を${color}にする`}
+                  aria-label={t('toolbar.pen.colorAria', { color })}
                   onClick={() => setPenColor(color)}
                 />
               ))}
@@ -234,32 +237,33 @@ export function PresentationView({ onPresenterFallback }: PresentationViewProps)
               className="presentation-presenter-btn"
               onClick={() => penOverlayRef.current?.clearPage(state.currentPage)}
             >
-              🗑 消去
+              {t('toolbar.pen.clear')}
             </button>
           </>
         )}
         <button type="button" className="presentation-presenter-btn" onClick={() => void toggleFullscreen()}>
-          {isFullscreen ? '⤡ 元に戻す' : '⤢ フルスクリーン'}
+          {isFullscreen ? t('toolbar.fullscreen.exit') : t('toolbar.fullscreen.enter')}
         </button>
         {isReactionsConfigured && state.sessionCode && (
           <button type="button" className="presentation-presenter-btn" onClick={() => setQrVisible((v) => !v)}>
-            参加用QR
+            {t('toolbar.joinQr')}
           </button>
         )}
         <button type="button" className="presentation-presenter-btn" onClick={() => void handleOpenPresenterView()}>
-          発表者ビューを開く（Tab）
+          {t('toolbar.openPresenter')}
         </button>
         <button
           type="button"
           className="presentation-presenter-btn"
           onClick={() => {
-            if (window.confirm('PDFを閉じてトップ画面に戻りますか？（現在のメモ・タイマー・書き込みは破棄されます）')) {
+            if (window.confirm(t('confirm.closePdf'))) {
               closePresentation();
             }
           }}
         >
-          📁 PDFを閉じる
+          {t('toolbar.closePdf')}
         </button>
+        <LanguageToggle />
       </div>
       {qrVisible && state.sessionCode && <QrJoinPanel sessionCode={state.sessionCode} />}
     </div>

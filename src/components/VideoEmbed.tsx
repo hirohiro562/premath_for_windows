@@ -1,4 +1,5 @@
 import { toEmbedUrl } from '../lib/video';
+import { useTranslation } from '../lib/i18n';
 
 interface VideoEmbedProps {
   url: string;
@@ -6,6 +7,7 @@ interface VideoEmbedProps {
 }
 
 export function VideoEmbed({ url, className }: VideoEmbedProps) {
+  const { t } = useTranslation();
   const embed = toEmbedUrl(url);
 
   if (embed.type === 'video') {
@@ -19,7 +21,7 @@ export function VideoEmbed({ url, className }: VideoEmbedProps) {
       src={embed.src}
       allow="autoplay; fullscreen; encrypted-media"
       allowFullScreen
-      title="動画"
+      title={t('video.title')}
     />
   );
 }

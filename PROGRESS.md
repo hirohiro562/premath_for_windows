@@ -94,6 +94,31 @@ Google FontsのCSS2 APIを実際に取得したところ、`M PLUS Rounded 1c`+`
 - インストーラー実行・インストール — **確認済み**（SmartScreen警告を経て正常にインストール）。
 - インストール版でのPDF読み込み — **当初失敗 → CSP修正（`connect-src`に`blob:`追加）→ 再ビルド・再インストールで解消、確認済み**。
 
+7. **アプリ名を「Dangi」から「NABLA」へ変更、UIをレトロ×サイバー（シンセウェイブ）テーマに全面刷新**（2026-07-22、実装済み・**未コミット**）。
+   - 名前: ∇（ナブラ、勾配・微分演算子）から。数学プレゼンソフトというニュアンスを重視してユーザーと相談の上決定。
+   - 配色: シンセウェイブ（`--bg: #0d0221`の濃紫背景 + シアン`#00f0ff`/マゼンタ`#ff2bd6`のネオングロー + 警告用アンバー`#f5d300`）。ライト/ダーク自動切替は廃止し、常時ダークの単一テーマに固定（`src/index.css`）。
+   - フォント: ロゴ（`NABLA`の英字部分）は`Press Start 2P`（8bitピクセルフォント）、見出し・ラベル類は`DotGothic16`（日本語対応のドットゴシック）、本文・数値は`M PLUS 1 Code`（等幅、コード風）。Google Fonts CDN経由（CSPは`fonts.googleapis.com`/`fonts.gstatic.com`のまま変更不要）。
+   - `App.css`: ガラスモーフィズム（ブラー・角丸ピル）から、ネオン枠線+コーナーブラケット（HUD風のL字装飾）のターミナル風パネルに全面書き換え。ボタン・タグ類はuppercase+letter-spacingでHUDラベル風に。
+   - アイコン: `NABLA_icon.png`（1024x1024、Python/PILでドット絵の∇シンボルを新規生成——32x32論理グリッドをNEARESTで拡大し、シアン→マゼンタの帯状グラデーション+ネオングロー+走査線背景を合成したもの。今後の再生成用ソースとしてリポジトリ直下に保持）から`npx tauri icon`で全アイコン再生成、`public/favicon.png`も差し替え。旧`Dangi_icon.png`は削除。
+   - 名前変更箇所: `package.json`(name)、`src-tauri/tauri.conf.json`(productName/identifier/window title)、`index.html`(title)、`src/lib/actions.ts`(発表者ウィンドウtitle)、`.github/workflows/release.yml`(releaseName)、`src/components/UploadScreen.tsx`(ロゴ表示・名前の由来テキスト)。
+   - 検証: `npm run build`（tsc+vite build）通過済み。`npm run dev`のVite開発サーバーをPlaywrightで開き、アップロード画面・投影画面（トップバー含む）のスクリーンショットで配色・フォント・アイコンの見た目を確認済み。**ただしTauriネイティブウィンドウでの実機確認はまだ**（発表者ウィンドウを開く操作は`@tauri-apps/api`のIPCに依存するため、プレーンブラウザのdevモードでは検証できない）。
+   - **状態: 変更はワーキングツリーに残したまま、コミットはまだ行っていない**（ユーザーの明示的な指示があるまで行わない方針を継続）。
+
+8. **アップロード画面の名前由来の説明文を削除、英語UI対応を追加**（2026-07-22、実装済み・**未コミット**）。
+   - `upload-name-note`（「NABLA（ナブラ）」は∇で表される...という説明段落）を`UploadScreen.tsx`/`App.css`から削除。
+   - `src/lib/i18n.ts`を新規追加: `ja`/`en`の文言辞書＋`localStorage`永続化＋`@tauri-apps/api/event`でのウィンドウ間同期（`syncStore.ts`と同じパターンだが、PDFセッション状態とは別の独立したキー・イベント名。メインウィンドウ再起動時に毎回まっさらに戻る「常に新規アップロード画面」の挙動とは違い、言語設定はどのウィンドウでも`localStorage`から復元する——ユーザー設定であり発表セッション状態ではないため）。`useTranslation()`フックと`<LanguageToggle />`コンポーネント（`src/components/LanguageToggle.tsx`）を追加。
+   - 対応箇所: `UploadScreen`・`PresenterView`・`PresentationView`（トグルはツールバー内に配置し他の操作ボタンと同様に自動非表示——投影画面に常時かぶらないため）・`JoinScreen`・`QrJoinPanel`・`VideoEmbed`・`NotePreview`のユーザー向け文言をすべて`t()`経由に置き換え。ウィンドウタイトルなどOSレベルの文字列（アプリ名そのもの）は対象外。
+   - 検証: `npm run build`通過。Playwright（devモード）でJA→EN切り替えのスクリーンショット確認済み。
+
+9. **アプリ名を「NABLA」から「TENSOR」へ再改名、アイコンをアイソメトリック立方体に一新**（2026-07-22、実装済み・**未コミット**）。
+   - 名前の再検討: ユーザーから追加の候補提示依頼があり、GAUSS/TENSOR/LEMMA/NABLA継続の4択を提示 → **TENSOR**に決定。UIのCSS（配色・フォント・パネルスタイル）は変更なしで維持、名前とアイコンのグリフのみ変更。
+   - 改名箇所は7.と同じ一式（`package.json`のname、`tauri.conf.json`のproductName/identifier/window title、`index.html`のtitle、`src/lib/actions.ts`の発表者ウィンドウtitle、`.github/workflows/release.yml`のreleaseName、`UploadScreen.tsx`のロゴ表示）＋`src/lib/i18n.ts`の内部localStorageキー/イベント名（`tensor-language`/`tensor-language-sync`、機能に影響なし・命名整合性のため）。ロゴは`∇`（ナブラ記号）を廃止し、先頭文字「T」を`.logo-d`でアクセントカラー表示する形に変更（`<span className="logo-d">T</span>ENSOR`）。
+   - アイコン: `TENSOR_icon.png`（1024x1024、Pythonでゼロから生成）。∇の三角形から、アイソメトリック（等角投影）の立方体に変更——テンソル（多次元配列）の典型的な可視化イメージである「数値の立方体」を意識した造形。上面はシアン寄りのハイライト、左面はシアン→紫の帯グラデーション、右面は紫→マゼンタの帯グラデーションで、引き続きシンセウェイブの配色・ネオングロー・走査線背景を踏襲。
+     - 実装メモ: 当初32論理ピクセルグリッドで作ったところ、正しいアイソメトリック比率（2:1の菱形上面）は浅い斜辺になるため32グリッドでは階段状のギザギザが目立ちすぎ「丸っぽい塊」に見えてしまう問題が発生 → 64論理ピクセルグリッド（1024÷64=16倍拡大）に上げて解決。上面に行ごとのグラデーションバンドを掛けると、菱形の一番幅広い中央部分に横方向の色境界線が入り「くぼみ」に見える不具合があったため、上面は単色（バンドなし）に変更して解消。
+     - 汎用の点内多角形判定（凸多角形、符号一貫性チェック）で3面をラスタライズする実装のため、他の形状に作り直したくなった場合も流用可能。
+   - `npx tauri icon`で全アイコン再生成・iOS/Android/Appx分は削除、`public/favicon.png`も差し替え。旧`NABLA_icon.png`は削除。
+   - 検証: `npm run build`通過。Playwrightでアップロード画面（ロゴ・ファビコン）を確認済み。**Tauriネイティブウィンドウでの実機確認はまだ**。
+
 ## 残っている作業
 
 - [x] `src-tauri/capabilities/default.json`の権限識別子が正しいか — **確認済み**。`gen/schemas/desktop-schema.json`と実際のTauri API呼び出し（`WebviewWindow`のconstructor/`getByLabel`/`setFocus`、`@tauri-apps/api/event`の`emit`/`listen`、`@tauri-apps/api/window`の`currentMonitor`/`availableMonitors`）を突き合わせ、`core:default`（`core:window:default`が`current-monitor`/`available-monitors`/`get-all-windows`をカバー、`core:webview:default`が`get-all-webviews`をカバー）＋明示的な`core:webview:allow-create-webview-window`・`core:window:allow-set-focus`・`core:event:default`で過不足なし。
@@ -102,6 +127,7 @@ Google FontsのCSS2 APIを実際に取得したところ、`M PLUS Rounded 1c`+`
 - [ ] フルスクリーン切り替えの動作確認 — **未実施**。
 - [ ] YouTube URL・直接mp4 URLの動画埋め込み確認（CSPの`frame-src`/`media-src`まわりの回帰確認）— **未実施**。
 - [ ] シングルモニタ環境でのフォールバック動作確認（上記「セカンドディスプレイ非検出時のフォールバック実装」参照）— **未実施**。開発機がシングルモニタのため本来は確認しやすいはずだが、まだ`npm run tauri dev`上での目視確認をしていない。「発表者ビューを開く」→バナー表示→発表者ビューに切り替わる→Tab/戻るボタンで投影画面に戻る、の一連を確認すること。
+- [ ] TENSORへの改名・シンセウェイブUI刷新・英語UI対応（上記7〜9.参照）の実機確認 — **未実施**。`npm run tauri dev`でウィンドウタイトル・タスクバーアイコン（立方体アイコン）・発表者ウィンドウの見た目・言語トグル・NSISインストーラーのアイコンを目視確認すること。問題なければコミット・pushする（現状ワーキングツリーのみ）。
 
 （上記4項目はネイティブウィンドウでの目視操作が必要。WindowsのフォアグラウンドウィンドウAPI制限によりバックグラウンドプロセスからの自動UI操作・スクリーンショット確認は本セッションでは断念、次回は実機で手動確認する）
 - [x] git commit・GitHubリモートリポジトリ作成 — **完了**。初回コミット（55ファイル）を作成し、`gh repo create premath_for_windows --public --source=. --remote=origin --push`でhttps://github.com/hirohiro562/premath_for_windows にpush済み。git設定はこのリポジトリ限定（`user.name=hirohiro562`, `user.email=hiroki2270.kagawa@gmail.com`、`--global`ではない）。
