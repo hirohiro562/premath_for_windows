@@ -6,7 +6,12 @@ import { useReactionFeed } from '../lib/reactions';
 import { SlideCanvas } from './SlideCanvas';
 import { NotePreview } from './NotePreview';
 
-export function PresenterView() {
+interface PresenterViewProps {
+  singleScreenMode?: boolean;
+  onExitSingleScreen?: () => void;
+}
+
+export function PresenterView({ singleScreenMode = false, onExitSingleScreen }: PresenterViewProps = {}) {
   const state = usePresentationState();
   const { doc, loadError } = usePdfDocument(state.pdfBlobUrl);
   const reactions = useReactionFeed(state.sessionCode);
@@ -17,6 +22,13 @@ export function PresenterView() {
     function onKeyDown(e: KeyboardEvent) {
       if (e.target instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
       switch (e.key) {
+        case 'Tab':
+        case 'Escape':
+          if (singleScreenMode && onExitSingleScreen) {
+            e.preventDefault();
+            onExitSingleScreen();
+          }
+          break;
         case 'ArrowRight':
         case 'ArrowDown':
         case 'PageDown':
@@ -38,7 +50,7 @@ export function PresenterView() {
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [state.currentPage]);
+  }, [state.currentPage, singleScreenMode, onExitSingleScreen]);
 
   if (!state.pdfBlobUrl) {
     return <div className="presenter-empty">メイン画面でPDFを読み込んでください</div>;
@@ -55,6 +67,14 @@ export function PresenterView() {
 
   return (
     <div className="presenter-view">
+      {singleScreenMode && (
+        <div className="presenter-single-screen-banner">
+          <span>2台目のディスプレイが見つかりません。投影画面とこの発表者ビューを切り替えて使用します。</span>
+          <button type="button" className="presenter-exit-single" onClick={onExitSingleScreen}>
+            ▶ 投影画面に戻る（Tab）
+          </button>
+        </div>
+      )}
       <div className="presenter-topbar">
         <div className="presenter-nav">
           <button type="button" onClick={() => goToPage(state.currentPage - 1)} aria-label="前のスライド">

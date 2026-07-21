@@ -100,26 +100,32 @@ export function setVideoUrl(page: number, url: string): void {
   updateState({ videosByPage });
 }
 
-export async function openPresenterWindow(): Promise<void> {
+// Returns false when there's no second monitor to put the presenter window on — the caller
+// should fall back to swapping the presenter view into the current window instead of opening
+// a second one that would just float over the fullscreen presentation on the same screen.
+export async function openPresenterWindow(): Promise<boolean> {
   const existing = await WebviewWindow.getByLabel('presenter');
   if (existing) {
     await existing.setFocus();
-    return;
+    return true;
   }
+
+  const placement = await getSecondaryScreenPlacement();
+  if (!placement) return false;
 
   const url = new URL(window.location.href);
   url.searchParams.set('presenter', '1');
   const relativeUrl = url.pathname + url.search;
 
-  const placement = await getSecondaryScreenPlacement();
   new WebviewWindow('presenter', {
     url: relativeUrl,
     title: 'Dangi — Presenter',
-    x: placement?.left,
-    y: placement?.top,
-    width: placement?.width ?? 1000,
-    height: placement?.height ?? 700,
+    x: placement.left,
+    y: placement.top,
+    width: placement.width,
+    height: placement.height,
   });
+  return true;
 }
 
 export function getJoinUrl(sessionCode: string): string {

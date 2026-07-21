@@ -336,6 +336,30 @@
   box-shadow: var(--glass-shadow);
 }
 
+.presenter-single-screen-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  background: var(--accent-warm-soft);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.presenter-exit-single {
+  flex-shrink: 0;
+  background: none;
+  border: 0.5px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
 .presenter-nav {
   display: flex;
   align-items: center;

@@ -16,7 +16,11 @@ const PEN_COLORS = ['#e83030', '#222222', '#2870ff', '#ffd000'];
 // density so text/lines stay crisp under projector upscaling or window resizes.
 const MAIN_CANVAS_RENDER_SCALE = 1.5;
 
-export function PresentationView() {
+interface PresentationViewProps {
+  onPresenterFallback: () => void;
+}
+
+export function PresentationView({ onPresenterFallback }: PresentationViewProps) {
   const state = usePresentationState();
   const { doc } = usePdfDocument(state.pdfBlobUrl);
   const [toolbarVisible, setToolbarVisible] = useState(true);
@@ -31,10 +35,19 @@ export function PresentationView() {
   const viewRef = useRef<HTMLDivElement>(null);
   const penOverlayRef = useRef<PenOverlayHandle>(null);
 
+  async function handleOpenPresenterView() {
+    const opened = await openPresenterWindow();
+    if (!opened) onPresenterFallback();
+  }
+
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.target instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
       switch (e.key) {
+        case 'Tab':
+          e.preventDefault();
+          void handleOpenPresenterView();
+          break;
         case 'ArrowRight':
         case 'ArrowDown':
         case 'PageDown':
@@ -233,8 +246,8 @@ export function PresentationView() {
             参加用QR
           </button>
         )}
-        <button type="button" className="presentation-presenter-btn" onClick={() => void openPresenterWindow()}>
-          発表者ビューを開く
+        <button type="button" className="presentation-presenter-btn" onClick={() => void handleOpenPresenterView()}>
+          発表者ビューを開く（Tab）
         </button>
         <button
           type="button"

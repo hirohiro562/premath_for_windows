@@ -67,6 +67,15 @@ Google FontsのCSS2 APIを実際に取得したところ、`M PLUS Rounded 1c`+`
 - その後、ユーザー提供の`Dangi_icon.png`（1024x1024、リポジトリ直下に保持・今後のアイコン再生成用ソース）に差し替え、`npx tauri icon Dangi_icon.png`で再生成。iOS/Android/Appx（Square*Logo.png・StoreLogo.png）向け生成物は同様に削除し、Windows向け7ファイル（`32x32.png`/`64x64.png`/`128x128.png`/`128x128@2x.png`/`icon.icns`/`icon.ico`/`icon.png`）のみ残す運用を継続。
 - `.github/workflows/release.yml`: `v*.*.*`タグpushで`windows-latest`上でNode 24 + Rust stable(msvc)をセットアップし、`tauri-apps/tauri-action@v1`で`releaseDraft: true`のドラフトリリースを作成。署名用シークレットなし。**未検証**（テストタグをまだpushしていない）。
 
+### セカンドディスプレイ非検出時のフォールバック実装（2026-07-19）
+- **課題**: `openPresenterWindow()`（`src/lib/actions.ts`）は`getSecondaryScreenPlacement()`が`null`（2台目のモニタが見つからない）を返しても、`width:1000/height:700`の通常ウィンドウとして同じ画面上に発表者ビューを開いてしまい、投影中のフルスクリーン画面と重なって発表が成立しなくなる問題があった（コード上、単一モニタ時の代替UI・警告は皆無だったことをgrepで確認済み）。
+- **対応**: `openPresenterWindow()`を`Promise<boolean>`に変更し、2台目のモニタが無い場合はウィンドウを開かず`false`を返すのみにした。呼び出し元（`App.tsx`/`PresentationView.tsx`）で`false`が返ったときに、**別ウィンドウを開く代わりに同じウィンドウ内で投影画面⇔発表者ビューを切り替える**フォールバックモードに入るようにした。
+  - `App.tsx`: `singleScreenPresenter`という同一ウィンドウ限定のローカルstateを追加し、trueなら`<PresenterView singleScreenMode onExitSingleScreen={...}>`、falseなら`<PresentationView onPresenterFallback={...}>`を出し分け。
+  - `PresentationView.tsx`: 「発表者ビューを開く」ボタン（`Tab`キーでも同じ動作）→`openPresenterWindow()`が`false`を返したら`onPresenterFallback()`を呼んでフォールバックモードに入る。
+  - `PresenterView.tsx`: `singleScreenMode`時のみ「2台目のディスプレイが見つかりません」バナー＋「▶ 投影画面に戻る（Tab）」ボタンを表示。`Tab`/`Escape`キーでも同様に投影画面へ戻れる。
+  - 2台目のモニタがある通常運用時の挙動（別ウィンドウをそのモニタ上に自動配置）は変更なし。
+- **状態**: `npm run build`で型チェック・ビルドは通過済み。**実機での目視確認は未実施**（シングルモニタ環境で「投影画面が表示された状態で発表者ビューを開く→フォールバックバナーが出て発表者ビューに切り替わる→Tab/戻るボタンで投影画面に戻る」の一連の流れを確認する必要あり）。
+
 ### ユーザーフィードバックへの対応（2026-07-19）
 - **初回起動時に前回PDFが残る問題**: `syncStore.ts`はセッション状態（PDFのblob URL含む）を`localStorage`に永続化しており、メインウィンドウが起動するたびにそれを読み込んで復元していたため、前回の発表で使ったPDFが次回起動時にも残ってしまっていた。ユーザーと相談し「常に新規アップロード画面から始める」方針に決定。メインウィンドウ（`?presenter`クエリなし）の初期化時は`localStorage`を読まず常に空状態から始まるよう`loadInitial()`を変更。発表者ウィンドウ（`?presenter=1`、同一セッション中にメインウィンドウから開かれる）は従来通り`localStorage`経由でメインウィンドウの現在の状態に同期する（この経路は残す必要がある——不用意に両方止めると発表者ウィンドウがメインと同期しなくなる）。
 - **投影画面の解像度**: `pdf.ts`の`renderPageToCanvas`は「表示先ボックスサイズ×devicePixelRatio」ちょうどのネイティブ等倍で描画していた。観客に見せるメイン投影画面（`PresentationView`）のみ、`renderScale`パラメータ経由で1.5倍のオーバーサンプリングを追加（`MAIN_CANVAS_RENDER_SCALE`定数、`PresentationView.tsx`）。発表者ビューのサムネイル（`PresenterView.tsx`）は据え置き（`renderScale`未指定＝デフォルト1倍）。
@@ -92,6 +101,7 @@ Google FontsのCSS2 APIを実際に取得したところ、`M PLUS Rounded 1c`+`
 - [ ] 第2モニタがある環境での自動配置確認 — **未実施**。開発機は現状シングルモニタ（1920×1080）構成のため、確認には複数モニタ環境が別途必要。
 - [ ] フルスクリーン切り替えの動作確認 — **未実施**。
 - [ ] YouTube URL・直接mp4 URLの動画埋め込み確認（CSPの`frame-src`/`media-src`まわりの回帰確認）— **未実施**。
+- [ ] シングルモニタ環境でのフォールバック動作確認（上記「セカンドディスプレイ非検出時のフォールバック実装」参照）— **未実施**。開発機がシングルモニタのため本来は確認しやすいはずだが、まだ`npm run tauri dev`上での目視確認をしていない。「発表者ビューを開く」→バナー表示→発表者ビューに切り替わる→Tab/戻るボタンで投影画面に戻る、の一連を確認すること。
 
 （上記4項目はネイティブウィンドウでの目視操作が必要。WindowsのフォアグラウンドウィンドウAPI制限によりバックグラウンドプロセスからの自動UI操作・スクリーンショット確認は本セッションでは断念、次回は実機で手動確認する）
 - [x] git commit・GitHubリモートリポジトリ作成 — **完了**。初回コミット（55ファイル）を作成し、`gh repo create premath_for_windows --public --source=. --remote=origin --push`でhttps://github.com/hirohiro562/premath_for_windows にpush済み。git設定はこのリポジトリ限定（`user.name=hirohiro562`, `user.email=hiroki2270.kagawa@gmail.com`、`--global`ではない）。
